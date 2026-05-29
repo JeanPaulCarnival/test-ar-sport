@@ -7,15 +7,18 @@
     
     <style>
       /* Stile globale per i contenitori a schermo intero */
-      .fullscreen-overlay {
-        display: none; /* Nascosto di default */
+            .fullscreen-overlay {
+        display: none; 
         position: fixed;
         top: 0; left: 0;
-        width: 100vw; height: 100vh;
+        width: 100%; height: 100%;
         background-color: black;
         z-index: 9999;
         justify-content: center;
         align-items: center;
+        /* Istruzioni per ignorare i bordi del browser */
+        padding: 0;
+        margin: 0;
       }
       
       video {
@@ -133,8 +136,19 @@
 
       // --- FUNZIONI DI APERTURA E CHIUSURA ---
       
-      function apriContenuto(containerId, videoId = null) {
-        document.getElementById(containerId).style.display = "flex";
+            function apriContenuto(containerId, videoId = null) {
+        const contenitore = document.getElementById(containerId);
+        contenitore.style.display = "flex";
+        
+        // Forza il browser ad andare a schermo intero totale (se supportato dal dispositivo)
+        if (contenitore.requestFullscreen) {
+          contenitore.requestFullscreen();
+        } else if (contenitore.webkitRequestFullscreen) { /* Safari / iOS */
+          contenitore.webkitRequestFullscreen();
+        } else if (contenitore.msRequestFullscreen) {
+          contenitore.msRequestFullscreen();
+        }
+
         if (videoId) {
           document.getElementById(videoId).play();
         }
@@ -142,13 +156,20 @@
 
       function chiudiContenuto(containerId, videoId = null) {
         document.getElementById(containerId).style.display = "none";
+        
+        // Esci dallo schermo intero totale e torna al browser normale
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari / iOS */
+          document.webkitExitFullscreen();
+        }
+
         if (videoId) {
           const video = document.getElementById(videoId);
           video.pause();
           video.currentTime = 0;
         }
       }
-
 
       // --- LOGICA INTERNA DELLO SLIDESHOW ---
       let slideIndex = 0;
