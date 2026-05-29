@@ -4,31 +4,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+      /* Stile per il Player Video a Schermo Intero */
+      #videoContainer {
+        display: none; /* Nascosto di default */
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background-color: black;
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      video {
+        width: 100%;
+        max-height: 100%;
+        object-fit: contain; /* Mantiene le proporzioni del video */
+      }
+
+      /* Pulsante per chiudere il video e tornare alla fotocamera */
+      #closeBtn {
+        position: absolute;
+        top: 20px; right: 20px;
+        background-color: rgba(255, 255, 255, 0.3);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px; height: 50px;
+        font-size: 24px;
+        font-family: sans-serif;
+        cursor: pointer;
+        display: flex; justify-content: center; align-items: center;
+        backdrop-filter: blur(5px);
+      }
+    </style>
   </head>
   <body>
 
+    <div id="videoContainer">
+      <button id="closeBtn">&times;</button>
+      <video id="mioVideo" src="./video-sport.mp4" controls playsinline></video>
+    </div>
+
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      
-      <a-assets>
-        <video id="mioVideo" src="./video-sport.mp4" preload="auto" loop="true" response-type="arraybuffer" crossorigin="anonymous" playsinline webkit-playsinline></video>
-      </a-assets>
-
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-video src="#mioVideo" width="1" height="0.7" position="0 0 0"></a-video>
-      </a-entity>
       
+      <a-entity id="targetCalcio" mindar-image-target="targetIndex: 0"></a-entity>
     </a-scene>
 
     <script>
-      const targetEl = document.querySelector('[mindar-image-target]');
+      const targetEl = document.querySelector('#targetCalcio');
+      const videoContainer = document.querySelector('#videoContainer');
       const videoEl = document.querySelector('#mioVideo');
+      const closeBtn = document.querySelector('#closeBtn');
+
+      // 1. Quando la fotocamera aggancia la foto sul pannello...
       targetEl.addEventListener("targetFound", event => {
+        // Mostra il contenitore a schermo intero
+        videoContainer.style.display = "flex";
+        // Fai partire il video automaticamente
         videoEl.play();
       });
-      targetEl.addEventListener("targetLost", event => {
-        videoEl.pause();
+
+      // 2. Quando l'utente clicca sul pulsante "Chiudi" (X)
+      closeBtn.addEventListener("click", () => {
+        videoEl.pause();            // Mette in pausa il video
+        videoEl.currentTime = 0;    // Lo resetta dall'inizio
+        videoContainer.style.display = "none"; // Nasconde il player e torna alla fotocamera
       });
     </script>
   </body>
